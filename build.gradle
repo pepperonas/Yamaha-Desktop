@@ -1,0 +1,188 @@
+/*
+ * Copyright (c) 2019 Martin Pfeffer
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+buildscript {
+    dependencies {
+        classpath group: 'de.dynamicfiles.projects.gradle.plugins', name: 'javafx-gradle-plugin', version: '8.8.2'
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
+plugins {
+    id "org.uulib.gradle.markdown" version "0.0.1"
+}
+
+apply plugin: 'java'
+apply plugin: 'javafx-gradle-plugin'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile fileTree(dir: 'lib', include: '*.jar')
+
+    compile 'com.jfoenix:jfoenix:8.0.2'
+}
+
+sourceSets.main {
+    java {
+        srcDir 'src/main/java'
+    }
+    resources {
+        srcDirs = ['src/main/java', 'src/main/resources']
+        exclude "**/*.java"
+    }
+}
+
+def props = new Properties()
+file("$projectDir/src/main/java/io/celox/app.properties").withInputStream {
+    props.load(it)
+}
+
+int version = props.getProperty("version") as int
+def app_name = props.getProperty("app_name")
+
+def static formatVersionCode(int versionCode) {
+    String res = String.valueOf(versionCode)
+    switch (res.length()) {
+        case 1:
+            return "0.0." + res
+        case 2:
+            return ("0." + res.charAt(0) + ".") + res.charAt(1)
+        case 3:
+            return "" + res.charAt(0) + ((".") + res.charAt(1)) + (".") + res.charAt(2)
+    }
+    return "-1"
+}
+
+task archive(type: Zip) {
+    println "zipping " + app_name + formatVersionCode(version)
+    archiveName = app_name + "-" + formatVersionCode(version) + ".zip"
+    //    archiveName = "${project.name}-" + formatVersionCode(version) + ".zip"
+    destinationDir = file('build/archive')
+    from 'build/jfx/app'
+    exclude "*.zip"
+    from 'build/docs/html'
+    exclude '*.md'
+    includeEmptyDirs = false
+}
+
+//task makeDocs(type: Exec) {
+//    println 'creating docs'
+//    executable "sh"
+//    args "-c", "echo '123'"
+//}
+//jfxJar.finalizedBy(makeDocs, archive)
+
+jfxJar.finalizedBy(archive)
+
+
+jfx {
+    verbose = true
+    mainClass = "io.celox.Main"
+    jfxAppOutputDir = "build/jfx/app"
+    jfxMainAppJarName = app_name + "-" + formatVersionCode(version) + ".jar"
+    deployDir = "src/main/deploy"
+    useEnvironmentRelativeExecutables = true
+    libFolderName = "lib"
+
+    // gradle jfxJar
+    css2bin = false
+    preLoader = null // String
+    updateExistingJar = false
+    allPermissions = false
+    manifestAttributes = null // Map<String, String>
+    addPackagerJar = true
+    copyAdditionalAppResourcesToJar = false
+    skipCopyingDependencies = false
+    useLibFolderContentForManifestClasspath = false
+    fixedManifestClasspath = null
+
+    // gradle jfxNative
+    identifier = null
+    // String - setting this for windows-bundlers makes it possible to generate upgradeable installers (using same GUID)
+    vendor = "celox"
+    nativeOutputDir = "build/jfx/native"
+    bundler = "ALL"
+    // set this to some specific, if your don't want all bundlers running, examples "windows.app", "jnlp", ...
+    jvmProperties = null // Map<String, String>
+    jvmArgs = null // List<String>
+    userJvmArgs = null // Map<String, String>
+    launcherArguments = null // List<String>
+    nativeReleaseVersion = "0.0.1"
+    needShortcut = false
+    needMenu = false
+    bundleArguments = [
+            // dont bundle JRE (not recommended, but increases build-size/-speed)
+            runtime: null
+    ]
+    appName = app_name
+    // this is used for files below "src/main/deploy", e.g. "src/main/deploy/windows/project.ico"
+    additionalBundlerResources = null
+    // path to some additional resources for the bundlers when creating application-bundle
+    additionalAppResources = null
+    // path to some additional resources when creating application-bundle
+    secondaryLaunchers = [[appName: "somethingDifferent"], [appName: "somethingDifferent2"]]
+    fileAssociations = null // List<Map<String, Object>>
+    noBlobSigning = false // when using bundler "jnlp", you can choose to NOT use blob signing
+    customBundlers = null // List<String>
+    failOnError = false
+    onlyCustomBundlers = false
+    skipJNLP = false
+    skipNativeVersionNumberSanitizing = false // anything than numbers or dots are removed
+    additionalJarsignerParameters = null // List<String>
+    skipMainClassScanning = false // set to true might increase build-speed
+
+    skipNativeLauncherWorkaround124 = false
+    skipNativeLauncherWorkaround167 = false
+    skipNativeLauncherWorkaround205 = false
+    skipJNLPRessourcePathWorkaround182 = false
+    skipSigningJarFilesJNLP185 = false
+    skipSizeRecalculationForJNLP185 = false
+    skipMacBundlerWorkaround = false
+
+    // gradle jfxRun
+    runJavaParameter = null // String
+    runAppParameter = null // String
+
+    // per default the outcome of the gradle "jarTask" will be used, set this to specify otherwise (like proguard-output)
+    alternativePathToJarFile = null // String
+
+    // to disable patching of ant-javafx.jar, set this to false
+    usePatchedJFXAntLib = true
+
+    // making it able to support absolute paths, defaults to "false" for maintaining old behaviour
+    checkForAbsolutePaths = false
+
+    // gradle jfxGenerateKeyStore
+    keyStore = "src/main/deploy/keystore.jks"
+    keyStoreAlias = "myalias"
+    keyStorePassword = "password"
+    keyPassword = null // will default to keyStorePassword
+    keyStoreType = "jks"
+    overwriteKeyStore = false
+
+    certDomain = null // required
+    certOrgUnit = null // defaults to "none"
+    certOrg = null // required
+    certState = null // required
+    certCountry = null // required
+}

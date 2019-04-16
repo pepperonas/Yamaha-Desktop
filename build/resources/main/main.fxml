@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright (c) 2019 kjtech.de - All Rights Reserved.
+  ~
+  ~ Unauthorized copying of this file, via any medium is strictly prohibited
+  ~ Proprietary and confidential.
+  -->
+
+<?import javafx.geometry.Insets?><?import javafx.scene.control.Menu?><?import javafx.scene.control.MenuBar?><?import javafx.scene.control.MenuItem?><?import javafx.scene.control.SeparatorMenuItem?><?import javafx.scene.layout.VBox?>
+<VBox fx:id="vbox_root" spacing="5" xmlns="http://javafx.com/javafx/8.0.112"
+    xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.celox.MainController">
+    <MenuBar>
+        <Menu text="File">
+            <MenuItem text="Info" onAction="#onMenuInfo" />
+            <MenuItem text="Preferences" onAction="#onMenuPreferences" />
+            <SeparatorMenuItem />
+            <MenuItem text="Exit" onAction="#onMenuExit" />
+        </Menu>
+        <Menu text="Help">
+            <MenuItem text="Instructions" onAction="#onMenuInstructions" />
+        </Menu>
+    </MenuBar>
+    <VBox>
+        <VBox>
+            <padding>
+                <Insets top="15" right="15" bottom="15" left="15" />
+            </padding>
+        </VBox>
+    </VBox>
+</VBox>
